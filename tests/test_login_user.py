@@ -11,8 +11,14 @@ class TestLoginUser:
             payload = {"email": data.email_registered, "password": data.password_registered}
         with allure.step('Отправка запроса'):
             response = requests.post(const.BASE_URL + const.LOGIN_USER_HANDLE, data=payload)
-        with allure.step('Проверка полученного статус-кода'):
+            response_data = response.json()
+            user_data = response_data['user']
+        with allure.step('Проверка полученного статус-кода и тела ответа'):
             assert response.status_code == 200
+            assert response_data['success'] == True
+            assert 'accessToken' in response_data
+            assert 'refreshToken' in response_data
+            assert user_data['email'] == payload["email"]
 
     @pytest.mark.parametrize(
         "email, password",
@@ -27,5 +33,8 @@ class TestLoginUser:
             payload = {"Email": email, "Пароль": password}
         with allure.step('Отправка запроса'):    
             response = requests.post(const.BASE_URL + const.LOGIN_USER_HANDLE, data=payload)
-        with allure.step('Проверка полученного статус-кода'):
+            response_data = response.json()
+        with allure.step('Проверка полученного статус-кода и тела ответа'):
             assert response.status_code == 401
+            assert response_data['success'] == False
+            assert response_data['message'] == 'email or password are incorrect'

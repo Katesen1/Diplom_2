@@ -16,8 +16,14 @@ class TestCreateOrder:
             payload2 = {'ingredients': data.ingr}
         with allure.step('Отправка запроса на создание заказа'):
             response2 = requests.post(const.BASE_URL+const.CREATE_ORDER_HANDLE, data=payload2)
-        with allure.step('Проверка полученного статус-кода'):
+            response_data = response2.json()
+            order_data = response_data['order']
+        with allure.step('Проверка полученного статус-кода и тела ответа'):
             assert response2.status_code == 200
+            assert response_data['success'] == True
+            assert 'name' in response_data
+            assert 'order' in response_data
+            assert 'number' in order_data
     
     @allure.title('Cоздание заказа без авторизации с ингредиентами')
     def test_without_auth(self):
@@ -25,15 +31,24 @@ class TestCreateOrder:
             payload = {'ingredients': data.ingr}
         with allure.step('Отправка запроса на создание заказа'):    
             response = requests.post(const.BASE_URL+const.CREATE_ORDER_HANDLE, data=payload)
-        with allure.step('Проверка, что нас перекинуло за авторизацию'):
+            response_data = response.json()
+            order_data = response_data['order']
+        with allure.step('Проверка полученного статус-кода и тела ответа'):
             assert response.status_code == 200
+            assert response_data['success'] == True
+            assert 'name' in response_data
+            assert 'order' in response_data
+            assert 'number' in order_data
     
     @allure.title('Cоздание заказа без ингридиентов и авторизации')
     def test_without_ingredients(self):
         with allure.step('Отправка запроса на создание заказа без ингридиентов'): 
             response = requests.post(const.BASE_URL+const.CREATE_ORDER_HANDLE)
-        with allure.step('Проверка полученного статус-кода'):
+            response_data = response.json()
+        with allure.step('Проверка полученного статус-кода и тела ответа'):
             assert response.status_code == 400
+            assert response_data['success'] == False
+            assert response_data['message'] == 'Ingredient ids must be provided'
     
     @allure.title('Cоздание заказа с неверным хешем ингридиента без авторизации')
     def test_wrong_hash(self):
